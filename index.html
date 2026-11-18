@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080c13">
+  <meta name="description" content="CoachMe : organise les entraînements, suis tes joueurs et prépare tes matchs de football.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CoachMe">
+  <title>CoachMe — Football Manager</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">C</div>
+      <div><strong>CoachMe</strong><small>FOOTBALL MANAGER</small></div>
+    </div>
+
+    <div class="side-label">MENU PRINCIPAL</div>
+    <button class="nav active" data-page="dashboard">⌂ Tableau de bord</button>
+    <button class="nav" data-page="sessions">◷ Entraînements</button>
+    <button class="nav" data-page="calendar">▦ Calendrier</button>
+    <button class="nav" data-page="matches">⚽ Matchs</button>
+
+    <div class="side-label">MON CLUB</div>
+    <button class="nav" data-page="players">♙ Joueurs</button>
+    <button class="nav" data-page="teams">♧ Équipes</button>
+    <button class="nav" data-page="exercises">▤ Exercices</button>
+    <button class="nav" data-page="goals">◎ Objectifs</button>
+
+    <div class="sidebar-bottom">
+      <button class="nav" id="exportBtn">⇩ Exporter mes données</button>
+      <label class="nav import-label">⇧ Importer une sauvegarde
+        <input type="file" id="importFile" accept=".json" hidden>
+      </label>
+      <small>CoachMe · Version 1.0</small>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="menuBtn" class="menu-btn">☰</button>
+      <div>
+        <h1 id="pageTitle">Tableau de bord</h1>
+        <p id="todayText"></p>
+      </div>
+      <div class="topbar-actions"><button class="secondary-btn" id="pwaInstallBtn" type="button" hidden>＋ Installer</button><button class="primary-btn" id="quickSession">+ Nouvelle séance</button></div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section class="page active" id="dashboard">
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">ESPACE COACH</span>
+          <h2>Bienvenue sur <span>CoachMe.</span></h2>
+          <p>Organise tes entraînements, suis tes joueurs et prépare tes matchs.</p>
+        </div>
+        <div class="welcome-ball">⚽</div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card"><span>SÉANCES</span><strong id="statSessions">0</strong><small>Total enregistré</small></article>
+        <article class="stat-card"><span>SÉANCES TERMINÉES</span><strong id="statCompleted">0</strong><small>Entraînements réalisés</small></article>
+        <article class="stat-card"><span>JOUEURS</span><strong id="statPlayers">0</strong><small>Dans ton effectif</small></article>
+        <article class="stat-card"><span>MATCHS JOUÉS</span><strong id="statMatches">0</strong><small>Rencontres enregistrées</small></article>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="panel">
+          <div class="panel-heading"><div><h3>Prochains entraînements</h3><p>Ton programme à venir</p></div><button class="text-btn" data-go="sessions">Tout voir →</button></div>
+          <div id="upcomingList" class="stack-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading"><div><h3>Résultats des matchs</h3><p>Résumé de tes rencontres</p></div><button class="text-btn" data-go="matches">Tout voir →</button></div>
+          <div id="matchSummary" class="stack-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading"><div><h3>État des entraînements</h3><p>Répartition de tes séances</p></div></div>
+          <div id="sessionOverview" class="overview"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading"><div><h3>Objectifs en cours</h3><p>Progression de tes joueurs</p></div><button class="text-btn" data-go="goals">Voir →</button></div>
+          <div id="dashboardGoals" class="stack-list"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- SESSIONS -->
+    <section class="page" id="sessions">
+      <div class="section-heading">
+        <div><h2>Entraînements</h2><p>Prépare et suis tes séances.</p></div>
+        <button class="primary-btn" id="newSession">+ Créer une séance</button>
+      </div>
+      <div class="toolbar">
+        <input id="sessionSearch" placeholder="Rechercher une séance...">
+        <select id="sessionStatusFilter">
+          <option value="all">Tous les statuts</option>
+          <option value="planned">À venir</option>
+          <option value="completed">Terminées</option>
+          <option value="cancelled">Annulées</option>
+        </select>
+        <select id="sessionTeamFilter"><option value="all">Toutes les équipes</option></select>
+      </div>
+      <div id="sessionList" class="card-grid"></div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="page" id="calendar">
+      <div class="section-heading">
+        <div><h2>Calendrier</h2><p>Visualise ton programme mensuel.</p></div>
+        <button class="primary-btn" id="calendarAdd">+ Ajouter une séance</button>
+      </div>
+      <div class="panel">
+        <div class="calendar-controls">
+          <button class="secondary-btn" id="prevMonth">←</button>
+          <h3 id="calendarMonth"></h3>
+          <button class="secondary-btn" id="nextMonth">→</button>
+          <button class="text-btn" id="calendarToday">Aujourd'hui</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+      <div class="panel selected-day">
+        <h3 id="selectedDateTitle">Séances du jour</h3>
+        <div id="selectedDayList"></div>
+      </div>
+    </section>
+
+    <!-- MATCHES -->
+    <section class="page" id="matches">
+      <div class="section-heading">
+        <div><h2>Matchs</h2><p>Enregistre les rencontres et leurs résultats.</p></div>
+        <button class="primary-btn" id="newMatch">+ Ajouter un match</button>
+      </div>
+      <div class="stats-grid match-stats">
+        <article class="stat-card"><span>JOUÉS</span><strong id="matchPlayed">0</strong></article>
+        <article class="stat-card"><span>VICTOIRES</span><strong id="matchWins">0</strong></article>
+        <article class="stat-card"><span>NULS</span><strong id="matchDraws">0</strong></article>
+        <article class="stat-card"><span>DÉFAITES</span><strong id="matchLosses">0</strong></article>
+      </div>
+      <div id="matchList" class="card-grid"></div>
+    </section>
+
+    <!-- PLAYERS -->
+    <section class="page" id="players">
+      <div class="section-heading">
+        <div><h2>Effectif</h2><p>Gère les joueurs de tes équipes.</p></div>
+      </div>
+      <form id="playerForm" class="panel form-grid">
+        <label>Nom du joueur<input id="playerName" placeholder="Ex. Lucas Martin" required></label>
+        <label>Numéro<input id="playerNumber" type="number" min="1" max="99" placeholder="10"></label>
+        <label>Poste<select id="playerPosition"><option>Gardien</option><option>Défenseur</option><option>Milieu</option><option>Attaquant</option><option>Ailier</option><option>Latéral</option></select></label>
+        <label>Équipe<select id="playerTeam"></select></label>
+        <button class="primary-btn form-submit">Ajouter le joueur</button>
+      </form>
+      <input class="search-input" id="playerSearch" placeholder="Rechercher un joueur...">
+      <div id="playerList" class="player-grid"></div>
+    </section>
+
+    <!-- TEAMS -->
+    <section class="page" id="teams">
+      <div class="section-heading"><div><h2>Mes équipes</h2><p>Organise tes groupes et catégories.</p></div></div>
+      <form id="teamForm" class="panel form-grid">
+        <label>Nom de l'équipe<input id="teamName" placeholder="Ex. U17 A" required></label>
+        <label>Catégorie<select id="teamCategory"><option>U11</option><option>U13</option><option>U15</option><option>U17</option><option>U18</option><option>Seniors</option><option>Autre</option></select></label>
+        <label>Couleur<input id="teamColor" type="color" value="#2684ff"></label>
+        <button class="primary-btn form-submit">Créer l'équipe</button>
+      </form>
+      <div id="teamList" class="card-grid"></div>
+    </section>
+
+    <!-- EXERCISES -->
+    <section class="page" id="exercises">
+      <div class="section-heading"><div><h2>Bibliothèque d'exercices</h2><p>Construis ta propre bibliothèque.</p></div></div>
+      <form id="exerciseForm" class="panel form-grid">
+        <label>Nom de l'exercice<input id="exerciseName" placeholder="Ex. Rondo 5 contre 2" required></label>
+        <label>Durée (minutes)<input id="exerciseDuration" type="number" min="1" value="10" required></label>
+        <label>Catégorie<select id="exerciseCategory"><option>Technique</option><option>Tactique</option><option>Physique</option><option>Finition</option><option>Conservation</option><option>Échauffement</option></select></label>
+        <label>Matériel<input id="exerciseEquipment" placeholder="Ballons, plots..."></label>
+        <label class="full-width">Consignes<textarea id="exerciseInstructions" placeholder="Décris le déroulement..."></textarea></label>
+        <button class="primary-btn form-submit">Ajouter l'exercice</button>
+      </form>
+      <input class="search-input" id="exerciseSearch" placeholder="Rechercher un exercice...">
+      <div id="exerciseList" class="card-grid"></div>
+    </section>
+
+    <!-- GOALS -->
+    <section class="page" id="goals">
+      <div class="section-heading"><div><h2>Objectifs individuels</h2><p>Accompagne la progression de tes joueurs.</p></div></div>
+      <form id="goalForm" class="panel form-grid">
+        <label>Joueur<select id="goalPlayer"></select></label>
+        <label>Objectif<input id="goalName" placeholder="Ex. Améliorer les passes" required></label>
+        <label>Progression actuelle<input id="goalProgress" type="number" min="0" value="0"></label>
+        <label>Objectif à atteindre<input id="goalTarget" type="number" min="1" value="10"></label>
+        <button class="primary-btn form-submit">Créer l'objectif</button>
+      </form>
+      <div id="goalList" class="card-grid"></div>
+    </section>
+  </main>
+</div>
+
+<!-- MODALE SÉANCE -->
+<div class="modal hidden" id="sessionModal">
+  <div class="modal-box">
+    <div class="modal-heading"><h2 id="sessionModalTitle">Nouvelle séance</h2><button class="close-btn" data-close="session">×</button></div>
+    <form id="sessionForm">
+      <div class="template-buttons">
+        <span>Modèles :</span>
+        <button type="button" data-template="warmup">Échauffement</button>
+        <button type="button" data-template="passing">Passes</button>
+        <button type="button" data-template="possession">Conservation</button>
+        <button type="button" data-template="finishing">Finition</button>
+      </div>
+      <div class="form-grid">
+        <label>Nom<input id="sessionName" required></label>
+        <label>Date<input id="sessionDate" type="date" required></label>
+        <label>Équipe<select id="sessionTeam"></select></label>
+        <label>Objectif<select id="sessionObjective"><option>Technique</option><option>Tactique</option><option>Physique</option><option>Offensif</option><option>Défensif</option><option>Collectif</option></select></label>
+        <label>Durée (minutes)<input id="sessionDuration" type="number" min="1" value="60" required></label>
+        <label>Statut<select id="sessionStatus"><option value="planned">À venir</option><option value="completed">Terminée</option><option value="cancelled">Annulée</option></select></label>
+        <label class="full-width">Description<textarea id="sessionDescription"></textarea></label>
+        <label class="full-width">Exercices (un par ligne : nom | durée | consignes | matériel)<textarea id="sessionExercises" placeholder="Rondo | 10 | Conserver le ballon | Ballons, plots"></textarea></label>
+        <div class="full-width"><strong>Présences des joueurs</strong><div id="attendanceList" class="attendance-list"></div></div>
+        <label class="full-width">Bilan après séance<textarea id="sessionNotes" placeholder="Ce qui a bien fonctionné, points à améliorer..."></textarea></label>
+        <label>Note de la séance<select id="sessionRating"><option value="">Non notée</option><option value="1">1 / 5</option><option value="2">2 / 5</option><option value="3">3 / 5</option><option value="4">4 / 5</option><option value="5">5 / 5</option></select></label>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary-btn" data-close="session">Annuler</button><button class="primary-btn">Enregistrer</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODALE MATCH -->
+<div class="modal hidden" id="matchModal">
+  <div class="modal-box">
+    <div class="modal-heading"><h2 id="matchModalTitle">Ajouter un match</h2><button class="close-btn" data-close="match">×</button></div>
+    <form id="matchForm" class="form-grid">
+      <label>Adversaire<input id="opponent" placeholder="Nom de l'équipe adverse" required></label>
+      <label>Date<input id="matchDate" type="date" required></label>
+      <label>Notre équipe<select id="matchTeam"></select></label>
+      <label>Lieu<select id="matchVenue"><option>Domicile</option><option>Extérieur</option><option>Terrain neutre</option></select></label>
+      <label>Nos buts<input id="ourScore" type="number" min="0" value="0" required></label>
+      <label>Buts adverses<input id="theirScore" type="number" min="0" value="0" required></label>
+      <label class="full-width">Bilan du match<textarea id="matchNotes" placeholder="Points forts, axes de progression..."></textarea></label>
+      <div class="modal-actions full-width"><button type="button" class="secondary-btn" data-close="match">Annuler</button><button class="primary-btn">Enregistrer</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODALE PROFIL -->
+<div class="modal hidden" id="profileModal">
+  <div class="modal-box">
+    <div class="modal-heading"><h2 id="profileTitle">Profil joueur</h2><button class="close-btn" data-close="profile">×</button></div>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="./app.js" defer></script>
+<script src="./pwa.js" defer></script>
+</body>
+</html>
